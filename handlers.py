@@ -201,41 +201,6 @@ async def run_night(bot: Bot, game: Game, chat_id: int):
 
     await run_day(bot, game, chat_id)
 
-# ... (boshqa kodlar o'zgarmaydi)
-
-@dp.message(F.chat.type.in_({"group", "supergroup"}))
-async def night_filter(message: types.Message):
-    chat_id = message.chat.id
-    game = games.get(chat_id)
-    if not game or game.phase != Phase.NIGHT:
-        return
-    text = message.text or ""
-    if not text.startswith("!"):
-        try:
-            await message.delete()
-        except Exception:
-            pass
-
-@dp.callback_query(F.data.startswith("buy:"))
-async def cb_buy(call: types.CallbackQuery):
-    chat_id = call.message.chat.id
-    game = games.get(chat_id)
-    
-    if not game:
-        await call.answer("❌ Oyin topilmadi.")
-        return
-    
-    player = game.players.get(call.from_user.id)
-    if not player:
-        await call.answer("❌ Siz oyinda emassiz.")
-        return
-    
-    item_key = call.data.split(":")[1]
-    item = SHOP_ITEMS.get(item_key)
-    if not item:
-        await call.answer("❌ Mahsulot topilmadi.")
-        return
-
 async def end_game(bot: Bot, game: Game, chat_id: int, winner: str):
     game.phase = Phase.ENDED
     msgs = {
@@ -257,7 +222,7 @@ async def end_game(bot: Bot, game: Game, chat_id: int, winner: str):
     del games[chat_id]
 
 # ──────────────────────────────
-# REGISTER
+# REGISTER - HAMMA HANDLERLAR SHU ICHIDA
 # ──────────────────────────────
 
 def register(dp: Dispatcher):
@@ -426,6 +391,7 @@ def register(dp: Dispatcher):
         except Exception:
             await message.answer("❌ DM ga yoza olmadim. Botga DM oching.")
 
+    # ⚠️ BU HANDLER register ICHIDA BO'LISHI KERAK!
     @dp.message(F.chat.type.in_({"group", "supergroup"}))
     async def night_filter(message: types.Message):
         chat_id = message.chat.id
@@ -497,11 +463,24 @@ def register(dp: Dispatcher):
 
     @dp.callback_query(F.data.startswith("buy:"))
     async def cb_buy(call: types.CallbackQuery):
+        chat_id = call.message.chat.id
+        game = games.get(chat_id)
+        
+        if not game:
+            await call.answer("❌ Oyin topilmadi.")
+            return
+        
+        player = game.players.get(call.from_user.id)
+        if not player:
+            await call.answer("❌ Siz oyinda emassiz.")
+            return
+        
         item_key = call.data.split(":")[1]
         item = SHOP_ITEMS.get(item_key)
         if not item:
-            await call.answer("Mahsulot topilmadi.")
+            await call.answer("❌ Mahsulot topilmadi.")
             return
+        
         await call.answer(
             "✅ " + item["name"] + " sotib olindi!\n" + item["desc"],
             show_alert=True
