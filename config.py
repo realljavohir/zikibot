@@ -3,16 +3,22 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-BOT_TOKEN = os.getenv("BOT_TOKEN", "YOUR_BOT_TOKEN_HERE")
-ADMIN_IDS = list(map(int, os.getenv("ADMIN_IDS", "").split(","))) if os.getenv("ADMIN_IDS") else []
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+if not BOT_TOKEN:
+    raise ValueError("❌ BOT_TOKEN .env faylida topilmadi!")
 
-RATE_LIMIT = 25   # max xabar per minute
+# ADMIN_IDS ni to'g'ri o'qish
+ADMIN_IDS = []
+admin_ids_str = os.getenv("ADMIN_IDS", "")
+if admin_ids_str:
+    ADMIN_IDS = [int(x.strip()) for x in admin_ids_str.split(",") if x.strip()]
+
+RATE_LIMIT = 25
 MAX_PLAYERS = 40
-JOIN_TIMEOUT = 60  # sekund, /join dan /game gacha kutish
-DAY_DURATION = 120  # sekund
-NIGHT_DURATION = 60  # sekund
+JOIN_TIMEOUT = 60
+DAY_DURATION = 120
+NIGHT_DURATION = 60
 
-# Do'kon narxlari (admin panel orqali o'zgartiriladi)
 SHOP_PRICES = {
     "himoya":           {"price": 100, "currency": "coin"},
     "hujjat":           {"price": 190, "currency": "coin"},
@@ -27,9 +33,7 @@ SHOP_PRICES = {
     "geroy":            {"price": 90,  "currency": "diamond"},
 }
 
-# Premium guruhlar (admin panel orqali boshqariladi)
 PREMIUM_GROUPS: set = set()
 
-# Karta rekvizitlari
 CARD_NUMBER = os.getenv("CARD_NUMBER", "0000 0000 0000 0000")
 CARD_OWNER  = os.getenv("CARD_OWNER", "Karta egasi")
